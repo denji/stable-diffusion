@@ -2,3 +2,4 @@ logs/
 flagged/
 outputs/
 models/ldm/stable-diffusion-v1/
+**/__pycache__
