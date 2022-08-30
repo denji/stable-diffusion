@@ -59,6 +59,8 @@ Contains
 
     python scripts/txt2img.py --n_samples 2 --prompt "sketch of a female model riding a horse on a beach" --plms
 
+![Example](https://github.com/vladmandic/stable-diffusion/raw/main/example.png)
+
 ### Optimized
 
     python optimizedSD/optimized_txt2img.py --n_samples 2 --prompt "sketch of a female model riding a horse on a beach"
