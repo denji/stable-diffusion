@@ -25,10 +25,10 @@ def chunk(it, size):
 
 
 def load_model_from_config(ckpt, verbose=False):
-    print(f"Loading model from {ckpt}")
+    print(f"loading model: {ckpt}")
     pl_sd = torch.load(ckpt, map_location="cpu")
     if "global_step" in pl_sd:
-        print(f"Global Step: {pl_sd['global_step']}")
+        print(f"global step: {pl_sd['global_step']}")
     sd = pl_sd["state_dict"]
     return sd
 
@@ -162,7 +162,7 @@ parser.add_argument(
 )
 opt = parser.parse_args()
 
-tic = time.time()
+tic0 = time.time()
 os.makedirs(opt.outdir, exist_ok=True)
 outpath = opt.outdir
 grid_count = len(os.listdir(outpath)) - 1
@@ -228,7 +228,7 @@ if not opt.from_file:
     data = [batch_size * [prompt]]
 
 else:
-    print(f"reading prompts from {opt.from_file}")
+    print(f"prompts file: {opt.from_file}")
     with open(opt.from_file, "r") as f:
         data = f.read().splitlines()
         data = batch_size * list(data)
@@ -241,11 +241,22 @@ else:
     precision_scope = nullcontext
 
 seeds = ""
+tic1 = time.time()
 with torch.no_grad():
 
     all_samples = list()
-    for n in trange(opt.n_iter, desc="Sampling"):
-        for prompts in tqdm(data, desc="data"):
+    print("params:", opt.__dict__)
+    print("resolution:", opt.W, 'x', opt.H, 'x', opt.C)
+    print("sampler: PLMS")
+    print("iterations:", opt.n_iter)
+    print("samples per iteration:", opt.n_samples)
+    print("sample timesteps:", opt.ddim_steps)
+
+    # for n in trange(opt.n_iter, desc="iteration"):
+    for n in range(0, opt.n_iter):
+        print("start iteration:", n)
+        for prompts in data:
+        # for prompts in tqdm(data, desc="prompt"):
 
             sample_path = os.path.join(outpath, "_".join(re.split(":| ", prompts[0])))[:150]
             os.makedirs(sample_path, exist_ok=True)
@@ -295,16 +306,12 @@ with torch.no_grad():
 
                 modelFS.to(opt.device)
 
-                print(samples_ddim.shape)
                 print("saving images")
                 for i in range(batch_size):
-
                     x_samples_ddim = modelFS.decode_first_stage(samples_ddim[i].unsqueeze(0))
                     x_sample = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
                     x_sample = 255.0 * rearrange(x_sample[0].cpu().numpy(), "c h w -> h w c")
-                    Image.fromarray(x_sample.astype(np.uint8)).save(
-                        os.path.join(sample_path, "seed_" + str(opt.seed) + "_" + f"{base_count:05}.{opt.format}")
-                    )
+                    Image.fromarray(x_sample.astype(np.uint8)).save(os.path.join(sample_path, "seed_" + str(opt.seed) + "_" + f"{base_count:05}.{opt.format}"))
                     seeds += str(opt.seed) + ","
                     opt.seed += 1
                     base_count += 1
@@ -315,17 +322,8 @@ with torch.no_grad():
                     while torch.cuda.memory_allocated() / 1e6 >= mem:
                         time.sleep(1)
                 del samples_ddim
-                print("memory_final = ", torch.cuda.memory_allocated() / 1e6)
 
-toc = time.time()
-
-time_taken = (toc - tic) / 60.0
-
-print(
-    (
-        "Samples finished in {0:.2f} minutes and exported to "
-        + sample_path
-        + "\n Seeds used = "
-        + seeds[:-1]
-    ).format(time_taken)
-)
+tic2 = time.time()
+print("gpu memory allocated:", torch.cuda.memory_allocated() / 1024, 'MB')
+print("export folder:", sample_path)
+print(("wall: {0:.1f} sec").format(tic2 - tic0) + (" load: {0:.1f} sec").format(tic1 - tic0) + (" sample: {0:.1f} sec").format((tic2 - tic1) / (opt.n_samples * opt.n_iter)))

@@ -34,10 +34,10 @@ def chunk(it, size):
 
 
 def load_model_from_config(ckpt, verbose=False):
-    print(f"Loading model from {ckpt}")
+    print(f"loading model: {ckpt}")
     pl_sd = torch.load(ckpt, map_location="cpu")
     if "global_step" in pl_sd:
-        print(f"Global Step: {pl_sd['global_step']}")
+        print(f"global step: {pl_sd['global_step']}")
     sd = pl_sd["state_dict"]
     return sd
 
@@ -46,13 +46,13 @@ def load_img(image, h0, w0):
 
     image = image.convert("RGB")
     w, h = image.size
-    print(f"loaded input image of size ({w}, {h})")
+    print(f"input image resolution: {w} x {h}")
     if h0 is not None and w0 is not None:
         h, w = h0, w0
 
     w, h = map(lambda x: x - x % 64, (w, h))  # resize to integer multiple of 32
 
-    print(f"New image size ({w}, {h})")
+    print(f"input image resized: {w} x {h}")
     image = image.resize((w, h), resample=Image.LANCZOS)
     image = np.array(image).astype(np.float32) / 255.0
     image = image[None].transpose(0, 3, 1, 2)

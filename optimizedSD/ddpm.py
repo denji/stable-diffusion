@@ -59,7 +59,7 @@ class DDPM(pl.LightningModule):
         super().__init__()
         assert parameterization in ["eps", "x0"], 'currently only supporting "eps" and "x0"'
         self.parameterization = parameterization
-        print(f"{self.__class__.__name__}: Running in {self.parameterization}-prediction mode")
+        print(f"ddpm: {self.__class__.__name__} mode: {self.parameterization}")
         self.cond_stage_model = None
         self.clip_denoised = clip_denoised
         self.log_every_t = log_every_t
@@ -506,7 +506,7 @@ class UNet(DDPM):
         # sampling
         C, H, W = shape
         size = (batch_size, C, H, W)
-        print(f'Data shape for PLMS sampling is {size}')
+        # print(f'data shape: {size}')
 
         if(self.turbo):
             self.model1.to(self.cdevice)
@@ -547,7 +547,7 @@ class UNet(DDPM):
             _, b1, b2, b3 = shape
             img_shape = (1, b1, b2, b3)
             tens = []
-            print("seeds used = ", [seed+s for s in range(b)])
+            print("seeds used: ", [seed+s for s in range(b)])
             for _ in range(b):
                 torch.manual_seed(seed)
                 tens.append(torch.randn(img_shape, device=device))
@@ -565,9 +565,8 @@ class UNet(DDPM):
 
         time_range = list(reversed(range(0,timesteps))) if ddim_use_original_steps else np.flip(timesteps)
         total_steps = timesteps if ddim_use_original_steps else timesteps.shape[0]
-        print(f"Running PLMS Sampling with {total_steps} timesteps")
 
-        iterator = tqdm(time_range, desc='PLMS Sampler', total=total_steps)
+        iterator = tqdm(time_range, desc="progress", total=total_steps)
         old_eps = []
 
         for i, step in enumerate(iterator):
