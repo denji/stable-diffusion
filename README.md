@@ -2,17 +2,25 @@
 
 Custom installation to combine all of the best work related to **Stable Diffusion** in a single repo with unified requirements and...
 - Working on `WSL2` with `CUDA`
-- With latest versions of packages
-- Running in global context Without `Anaconda`
+- With latest versions of `Python` packages
+- Running in global context Without Anaconda`
 
 ## What's included?
 
 - Original implementation  
 - Memory-optimized implementation  
 - Auxiliary models:  
-  Multiple diffusers, face restoration, upsampling and detail enhancement  
-- Basic GUI server  
+  Multiple diffusers, face restoration, upsampling, super-resolution and detail enhancement  
+- Supports feedback-loops  
+  Output image can be auto-fed as new input to refine final results  
 - Full Web UI  
+- Basic GUI server  
+
+## Example
+
+*Sketch of a female model riding a horse on a beach*
+![Example](https://github.com/vladmandic/stable-diffusion/raw/main/example.png)
+
 
 <br>
 
@@ -101,6 +109,8 @@ Check functionality
 
 ### 3. Download Model Weights
 
+*Note: Some additional auxiliary models will be auto-downloaded on first startup*
+
 **stable-diffusion**:
 - <https://huggingface.co/CompVis/stable-diffusion-v-1-4-original> -> `models/ldm/stable-diffusion-v1/model.ckpt`  
   Both `sd-v1-4.ckpt` and `sd-v1-4-full-ema.ckpt` are supported
@@ -116,6 +126,7 @@ Check functionality
 - <https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth> -> `src/realesrgan/experiments/pretrained_models/`
 - <https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth> -> `src/realesrgan/experiments/pretrained_models/`
 
+
 <br>
 
 ## Run
@@ -123,21 +134,23 @@ Check functionality
 ### Web-UI with full options  
 *Recommended*
 
-      python webui.py
+> python webui.py
+
       Running on local URL:  http://localhost:7860/
 ### CLI Original
 *Example*
 
-      python scripts/txt2img.py --n_samples 2 --prompt "sketch of a female model riding a horse on a beach" --plms
+> python scripts/txt2img.py --n_samples 2 --prompt "sketch of a female model riding a horse on a beach" --plms
 
 ### CLI Memory Optimized
 *Example*
 
-      python optimized/optimized_txt2img.py --n_samples 4 --turbo --prompt "sketch of a female model riding a horse on a beach"
+> python optimized/txt2img.py --n_samples 4 --turbo --prompt "sketch of a female model riding a horse on a beach"
 
 ### Basic GUI
 
-      python optimized/txt2img_gradio.py  
+> python optimized/txt2img_gradio.py  
+
       running on local URL:  http://127.0.0.1:7860/
 
 <br>
@@ -160,5 +173,3 @@ Check functionality
     from transformers import logging
     logging.set_verbosity_error()
 ```
-
-![Example](https://github.com/vladmandic/stable-diffusion/raw/main/example.png)
