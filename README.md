@@ -1,24 +1,40 @@
 # CompVis Stable-Diffusion
 
-Custom installation...
-
+Custom installation to combine all of the best work related to **Stable Diffusion** in a single repo with unified requirements and...
 - Working on `WSL2` with `CUDA`
 - With latest versions of packages
 - Running in global context Without `Anaconda`
 
-Contains 
+## What's included?
 
-- Original implementation
-- Memory-optimized impolementation
-- GUI server
+- Original implementation  
+- Memory-optimized implementation  
+- Auxiliary models:  
+  Multiple diffusers, face restoration, upsampling and detail enhancement  
+- Basic GUI server  
+- Full Web UI  
+
+<br>
 
 ## Links & Credits
 
-- [Stable Diffusion Announcement](https://stability.ai/blog/stable-diffusion-public-release)
-- [Stable Diffusion Repository](https://github.com/CompVis/stable-diffusion)
-- [Original Notes](https://github.com/vladmandic/stable-diffusion/blob/main/STABLE-DIFFUSION.md)
+### Original work
 - [Model Card](https://github.com/vladmandic/stable-diffusion/blob/main/MODEL-CARD.md)
+- [Stable Diffusion Repository](https://github.com/CompVis/stable-diffusion) [[Readme]](https://github.com/vladmandic/stable-diffusion/blob/main/STABLE-DIFFUSION.md)
+- [Stable Diffusion Announcement](https://stability.ai/blog/stable-diffusion-public-release)
+
+### Enhancements
 - [Memory Optimized Executor](https://github.com/basujindal/stable-diffusion)
+- [Web-UI](https://github.com/hlky/stable-diffusion-webui) [[Readme]](https://github.com/vladmandic/stable-diffusion/blob/main/WEBUI.md)
+
+### Auxiliary models
+- [K-Diffusion](https://github.com/crowsonkb/k-diffusion)
+- [Real ESRGAN](https://github.com/xinntao/Real-ESRGAN) ~101MB  
+- [Latent Diffusion](https://github.com/devilismyfriend/latent-diffusion) ~2,056MB
+- [GFPGAN](https://github.com/TencentARC/GFPGAN) ~550MB
+- [Taming Transformers]() ~136MB
+
+<br>
 
 ## Installation
 
@@ -57,64 +73,78 @@ Check functionality
 
 ### 2. Install Dependencies
 
-> pip install albumentations diffusers opencv-python pudb invisible-watermark imageio imageio-ffmpeg kornia  
-> pip install pytorch-lightning omegaconf test-tube streamlit einops torch-fidelity transformers torchmetrics gradio  
+*Yes, there are tons...*  
+*And all could be automated, but better to do it with some understanding...*  
+
+**local packages**:
+> pip install -e .  
+
+**shared libraries**:
+> pip install albumentations diffusers opencv-python pudb invisible-watermark imageio imageio-ffmpeg kornia   
+> pip install pytorch-lightning omegaconf test-tube streamlit einops torch-fidelity transformers torchmetrics  
+> pip install gradio pynvml basicsr facexlib  
+
+**shared libraries from dev to get latest unpublished version**:
 > pip install -e git+https://github.com/CompVis/taming-transformers.git@master#egg=taming-transformers  
 > pip install -e git+https://github.com/openai/CLIP.git@main#egg=clip  
-> pip install -e .  
+> pip install -e git+https://github.com/crowsonkb/k-diffusion/  
+
+**local clones of some auxiliary models**:
+> git clone --depth 1 https://github.com/devilismyfriend/latent-diffusion src/latent-diffusion  
+> pip install -e src/latent-diffusion  
+
+> git clone --depth 1 https://github.com/TencentARC/GFPGAN.git src/gfpgan  
+> pip install -e src/gfpgan  
+
+> git clone --depth 1 https://github.com/xinntao/Real-ESRGAN.git src/realesrgan  
+> pip install -e src/realesrgan  
 
 ### 3. Download Model Weights
 
-Download from: <https://huggingface.co/CompVis/stable-diffusion-v-1-4-original>  
-Both `sd-v1-4.ckpt` and `sd-v1-4-full-ema.ckpt` are supported
+**stable-diffusion**:
+- <https://huggingface.co/CompVis/stable-diffusion-v-1-4-original> -> `models/ldm/stable-diffusion-v1/model.ckpt`  
+  Both `sd-v1-4.ckpt` and `sd-v1-4-full-ema.ckpt` are supported
 
-> ln -s <path/to/model.ckpt> models/ldm/stable-diffusion-v1/model.ckpt 
+**latent-diffusion**:
+- <https://heibox.uni-heidelberg.de/f/31a76b13ea27482981b4/?dl=1> -> `src/latent-diffusion/experiments/project.yaml`
+- <https://heibox.uni-heidelberg.de/f/578df07c8fc04ffbadf3/?dl=1> -> `src/latent-diffusion/experiments/pretrained_model/model.ckpt`
+
+**gfpgan**:
+- <https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth> -> `src/gfpgan/experiments/pretrained_models/`
+
+**real-esrgan**:
+- <https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth> -> `src/realesrgan/experiments/pretrained_models/`
+- <https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth> -> `src/realesrgan/experiments/pretrained_models/`
+
+<br>
 
 ## Run
 
-### Original
+### Web-UI with full options  
+*Recommended*
 
-> python scripts/txt2img.py --n_samples 2 --prompt "sketch of a female model riding a horse on a beach" --plms
+      python webui.py
+      Running on local URL:  http://localhost:7860/
+### CLI Original
+*Example*
 
-### Memory Optimized
+      python scripts/txt2img.py --n_samples 2 --prompt "sketch of a female model riding a horse on a beach" --plms
 
-> python optimizedSD/optimized_txt2img.py --n_samples 4 --turbo --prompt "sketch of a female model riding a horse on a beach"
+### CLI Memory Optimized
+*Example*
 
-    loading model: models/ldm/stable-diffusion-v1/model.ckpt
-    global step: 470000
-    ddpm: UNet mode: eps
-    ddpm: CondStage mode: eps
-    ddpm: FirstStage mode: eps
-    working with z of shape (1, 4, 32, 32) = 4096 dimensions.
-    attention type: 'vanilla' channels: 512
-    params: {'prompt': 'sketch of a female model riding a horse on a beach', 'outdir': 'outputs/txt2img-samples', 'skip_grid': False, 'skip_save': False, 'ddim_steps': 50, 'fixed_code': False, 'ddim_eta': 0.0, 'n_iter': 1, 'H': 512, 'W': 512, 'C': 4, 'f': 8, 'n_samples': 4, 'n_rows': 0, 'scale': 7.5, 'device': 'cuda', 'from_file': None, 'seed': 162453, 'unet_bs': 1, 'turbo': True, 'precision': 'autocast', 'format': 'png'}
-    resolution: 512 x 512 x 4
-    sampler: PLMS
-    iterations: 1
-    samples per iteration: 4
-    sample timesteps: 50
-    start iteration: 0
-    seeds used:  [162453, 162454, 162455, 162456]
-    progress: 100% | 50/50 [00:47<00:00,  1.05it/s]
-    saving images
-    gpu memory allocated:  3907.0 MB
-    export folder: outputs/txt2img-samples/sketch_of_a_female_model_riding_a_horse_on_a_beach
-    wall: 61.1 sec load: 8.6 sec sample: 13.1 sec
+      python optimized/optimized_txt2img.py --n_samples 4 --turbo --prompt "sketch of a female model riding a horse on a beach"
 
-![Example](https://github.com/vladmandic/stable-diffusion/raw/main/example.png)
+### Basic GUI
 
-### Using GUI
+      python optimized/txt2img_gradio.py  
+      running on local URL:  http://127.0.0.1:7860/
 
-> python optimizedSD/txt2img_gradio.py
+<br>
 
-    loading model from models/ldm/stable-diffusion-v1/model.ckpt
-    ddpm: UNet mode: eps
-    ddpm: CondStage mode: eps
-    ddpm: FirstStage mode: eps
-    attention type: 'vanilla' channels: 512
-    running on local URL:  http://127.0.0.1:7860/
+## Random Notes
 
-## Additional Notes
+*Safe to Ignore*
 
 ### Enable PyTorch CUDA memory garbage collection
 
@@ -130,3 +160,5 @@ Both `sd-v1-4.ckpt` and `sd-v1-4-full-ema.ckpt` are supported
     from transformers import logging
     logging.set_verbosity_error()
 ```
+
+![Example](https://github.com/vladmandic/stable-diffusion/raw/main/example.png)
